@@ -2,6 +2,7 @@ package com.ditomax;
 
 import com.ditomax.item.ModItemGroups;
 import com.ditomax.item.ModItems;
+import com.ditomax.util.BackpackInteractions;
 import com.ditomax.util.OpenBackpackReceiver;
 import com.ditomax.util.gui.ModScreenHandlers;
 import com.ditomax.util.payload.OpenBackpackPayload;
@@ -20,6 +21,7 @@ public class BackpackMod implements ModInitializer {
         ModItems.registerItems();
         ModItemGroups.registerItemGroups();
         ModScreenHandlers.initialize();
+        BackpackInteractions.register();
 
         PayloadTypeRegistry.playC2S().register(OpenBackpackPayload.ID, OpenBackpackPayload.CODEC);
         OpenBackpackReceiver.register();

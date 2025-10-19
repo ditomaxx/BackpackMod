@@ -18,7 +18,7 @@ public class OpenBackpackReceiver {
                     ItemStack backpackStack = findBackpack(player);
 
                     if (backpackStack != null && !backpackStack.isEmpty()) {
-                        BackpackItem.openBackpack(player, backpackStack);
+                        BackpackItem.openBackpack(player, backpackStack, player);
                     } else {
                         Text text = Text.literal("§cDu hast kein Backpack ausgerüstet!");
                         context.player().sendMessage(text, true);

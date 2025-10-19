@@ -3,13 +3,13 @@
   "id": "backpackmod",
   "version": "${version}",
   "name": "Backpackmod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "This Mod adds a fully functional Backpack using the Trinkets API",
   "authors": [
-    "Me!"
+    "Ditomax"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "Github": "https://github.com/DitomaxHD",
+    "Modrinth": "https://modrinth.com/user/ditomax"
   },
   "license": "CC0-1.0",
   "icon": "assets/backpackmod/icon.png",
@@ -38,8 +38,5 @@
     "java": ">=21",
     "fabric-api": "*",
     "trinkets": ">=3.9.0"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }

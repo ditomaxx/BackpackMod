@@ -9,17 +9,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 
+import java.util.UUID;
+
 public class BackpackScreenHandler extends ScreenHandler {
 
     private final Inventory backpackInventory;
-    private final PlayerEntity backpackOwner;
+    private final UUID backpackOwnerUUID;
 
     // Server constructor
     public BackpackScreenHandler(int syncId, PlayerInventory playerInventory, Inventory backpackInventory, PlayerEntity backpackOwner) {
         super(ModScreenHandlers.BACKPACK_SCREEN_HANDLER, syncId);
 
         this.backpackInventory = backpackInventory;
-        this.backpackOwner = backpackOwner;
+        this.backpackOwnerUUID = backpackOwner.getUuid();
 
         checkSize(backpackInventory, 27);
 
@@ -33,13 +35,13 @@ public class BackpackScreenHandler extends ScreenHandler {
         // INVENTAR-SLOTS
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                this.addSlot(new Slot(playerInventory, 9 + row * 9 + col, 8 + col * 18, 85 + row * 18));
+                this.addSlot(new Slot(playerInventory, 9 + row * 9 + col, 8 + col * 18, 86 + row * 18));
             }
         }
 
         // HOTBAR
         for (int i = 0; i < 9; i++) {
-            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 143));
+            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 144));
         }
     }
 
@@ -48,7 +50,7 @@ public class BackpackScreenHandler extends ScreenHandler {
         super(ModScreenHandlers.BACKPACK_SCREEN_HANDLER, syncId);
 
         this.backpackInventory = new BackpackInventory();
-        this.backpackOwner = playerInventory.player;
+        this.backpackOwnerUUID = playerInventory.player.getUuid();
 
         checkSize(this.backpackInventory, 27);
 
@@ -62,13 +64,13 @@ public class BackpackScreenHandler extends ScreenHandler {
         // INVENTAR-SLOTS
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                this.addSlot(new Slot(playerInventory, 9 + row * 9 + col, 8 + col * 18, 85 + row * 18));
+                this.addSlot(new Slot(playerInventory, 9 + row * 9 + col, 8 + col * 18, 86 + row * 18));
             }
         }
 
         // HOTBAR
         for (int i = 0; i < 9; i++) {
-            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 143));
+            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 144));
         }
     }
 
@@ -104,19 +106,27 @@ public class BackpackScreenHandler extends ScreenHandler {
 
     @Override
     public boolean canUse(PlayerEntity player) {
-        if (this.backpackInventory == null || this.backpackOwner == null) {
+        if (this.backpackInventory == null || this.backpackOwnerUUID == null) {
             return false;
         }
 
-        // Prüfe ob der Owner noch ein Backpack trägt
-        boolean hasBackpack = TrinketsApi.getTrinketComponent(backpackOwner)
+        PlayerEntity owner = player.getWorld().getPlayerByUuid(backpackOwnerUUID);
+        if (owner == null) {
+            return false;
+        }
+
+        if (player.getUuid().equals(backpackOwnerUUID) && hasBackpackInInventory(player)) {
+            return true;
+        }
+
+        boolean ownerHasBackpack = TrinketsApi.getTrinketComponent(owner)
                 .map(comp -> comp.isEquipped(stack -> stack.getItem() instanceof BackpackItem))
                 .orElse(false);
 
-        return hasBackpack || hasBackpack(player);
+        return ownerHasBackpack && owner.squaredDistanceTo(player) <= 32.0;
     }
 
-    private boolean hasBackpack(PlayerEntity player) {
+    private boolean hasBackpackInInventory(PlayerEntity player) {
         for (ItemStack stack : player.getInventory().main) {
             if (stack.getItem() instanceof BackpackItem) {
                 return true;
@@ -141,7 +151,6 @@ public class BackpackScreenHandler extends ScreenHandler {
     @Override
     public void onClosed(PlayerEntity player) {
         super.onClosed(player);
-        // Finale Speicherung
         if (!player.getWorld().isClient()) {
             this.backpackInventory.markDirty();
         }
