@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "backpackmod",
+  "version": "${version}",
+  "name": "Backpackmod",
+  "description": "This is an example description! Tell everyone what your mod is about!",
+  "authors": [
+    "Me!"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/backpackmod/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.ditomax.BackpackMod"
+    ],
+    "client": [
+      "com.ditomax.BackpackModClient"
+    ],
+    "fabric-datagen": [
+      "com.ditomax.BackpackModDataGenerator"
+    ]
+  },
+  "mixins": [
+    "backpackmod.mixins.json",
+    {
+      "config": "backpackmod.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.17.3",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "trinkets": ">=3.9.0"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
