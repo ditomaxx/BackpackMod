@@ -1,7 +1,8 @@
 package com.ditomax.util.gui;
 
 import com.ditomax.item.BackpackItem;
-import dev.emi.trinkets.api.TrinketsApi;
+import com.ditomax.util.BackpackManager;
+import io.wispforest.accessories.api.AccessoriesCapability;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -114,17 +115,31 @@ public class BackpackScreenHandler extends ScreenHandler {
         if (owner == null) {
             return false;
         }
-
         if (player.getUuid().equals(backpackOwnerUUID) && hasBackpackInInventory(player)) {
             return true;
         }
 
-        boolean ownerHasBackpack = TrinketsApi.getTrinketComponent(owner)
-                .map(comp -> comp.isEquipped(stack -> stack.getItem() instanceof BackpackItem))
-                .orElse(false);
+        boolean ownerHasBackpack = hasBackpackEquipped(owner);
 
-        return ownerHasBackpack && owner.squaredDistanceTo(player) <= 32.0;
+        return ownerHasBackpack && owner.squaredDistanceTo(player) <= 32.0 * 32.0;
     }
+
+    private boolean hasBackpackEquipped(PlayerEntity player) {
+        var capability = AccessoriesCapability.get(player);
+        if (capability == null) return false;
+
+        for (var container : capability.getContainers().values()) {
+            for (int i = 0; i < container.getSize(); i++) {
+                ItemStack stack = container.getAccessories().getStack(i);
+                if (stack.getItem() instanceof BackpackItem) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 
     private boolean hasBackpackInInventory(PlayerEntity player) {
         for (ItemStack stack : player.getInventory().main) {
@@ -154,5 +169,6 @@ public class BackpackScreenHandler extends ScreenHandler {
         if (!player.getWorld().isClient()) {
             this.backpackInventory.markDirty();
         }
+        BackpackManager.removeInventory(player.getUuid());
     }
 }

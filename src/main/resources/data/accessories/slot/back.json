@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "amount": 1,
+  "operation": "set",
+  "order": 20,
+  "icon": "backpackmod:item/backpack_slot_icon",
+  "validators": [],
+  "drop_rule": "keep"
+}

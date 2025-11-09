@@ -1,7 +1,7 @@
 package com.ditomax;
 
 import com.ditomax.datagen.ModItemTagProvider;
-import com.ditomax.datagen.ModModelProvider;
+import com.ditomax.util.datagen.ModModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 

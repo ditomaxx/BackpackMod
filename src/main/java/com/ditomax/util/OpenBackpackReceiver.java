@@ -2,7 +2,7 @@ package com.ditomax.util;
 
 import com.ditomax.item.BackpackItem;
 import com.ditomax.util.payload.OpenBackpackPayload;
-import dev.emi.trinkets.api.TrinketsApi;
+import io.wispforest.accessories.api.AccessoriesCapability;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -28,15 +28,16 @@ public class OpenBackpackReceiver {
     }
 
     private static ItemStack findBackpack(ServerPlayerEntity player) {
-        var trinketBackpack = TrinketsApi.getTrinketComponent(player)
-                .map(comp -> {
-                    var equipped = comp.getEquipped(stack -> stack.getItem() instanceof BackpackItem);
-                    return equipped.isEmpty() ? ItemStack.EMPTY : equipped.getFirst().getRight();
-                })
-                .orElse(ItemStack.EMPTY);
-
-        if (!trinketBackpack.isEmpty()) {
-            return trinketBackpack;
+        var capability = AccessoriesCapability.get(player);
+        if (capability != null) {
+            for (var container : capability.getContainers().values()) {
+                for (int i = 0; i < container.getSize(); i++) {
+                    ItemStack stack = container.getAccessories().getStack(i);
+                    if (stack.getItem() instanceof BackpackItem) {
+                        return stack;
+                    }
+                }
+            }
         }
 
         return ItemStack.EMPTY;

@@ -18,11 +18,10 @@ public class BackpackMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        ModItems.registerItems();
+        ModItems.initialize();
         ModItemGroups.registerItemGroups();
         ModScreenHandlers.initialize();
         BackpackInteractions.register();
-
         PayloadTypeRegistry.playC2S().register(OpenBackpackPayload.ID, OpenBackpackPayload.CODEC);
         OpenBackpackReceiver.register();
     }

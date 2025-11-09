@@ -1,81 +1,102 @@
 package com.ditomax.util.rendering;
 
 import com.ditomax.item.BackpackItem;
-import dev.emi.trinkets.api.TrinketsApi;
+import io.wispforest.accessories.api.AccessoriesCapability;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
+import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
-public class BackpackFeatureRenderer extends FeatureRenderer<PlayerEntity, PlayerEntityModel<PlayerEntity>> {
+public class BackpackFeatureRenderer extends FeatureRenderer<PlayerEntityRenderState, PlayerEntityModel> {
 
     private static final Identifier TEXTURE = Identifier.of("backpackmod", "textures/entity/backpack_entity.png");
-    private static final double MAX_RENDER_DISTANCE_SQ = 32.0 * 32.0;
-
+    private static final double MAX_RENDER_DISTANCE_SQ = 64.0 * 64.0;
     private final BackpackModel backpackModel;
 
     public BackpackFeatureRenderer(
-            FeatureRendererContext<PlayerEntity, PlayerEntityModel<PlayerEntity>> context,
-            BackpackModel model) {
+            FeatureRendererContext<PlayerEntityRenderState, PlayerEntityModel> context,
+            ModelPart backpackModelPart) {
         super(context);
-        this.backpackModel = model;
+        this.backpackModel = new BackpackModel(backpackModelPart, RenderLayer::getEntityCutoutNoCull);
     }
 
     @Override
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light,
-                       PlayerEntity entity, float limbAngle, float limbDistance, float tickDelta,
-                       float animationProgress, float headYaw, float headPitch) {
-
-        boolean hasBackpack = TrinketsApi.getTrinketComponent(entity)
-                .map(comp -> comp.isEquipped(stack -> stack.getItem() instanceof BackpackItem))
-                .orElse(false);
-
-        if (!hasBackpack) {
-            return;
-        }
+                       PlayerEntityRenderState state, float limbAngle, float limbDistance) {
 
         MinecraftClient client = MinecraftClient.getInstance();
-
-        if (entity == client.player && client.options.getPerspective().isFirstPerson()) {
+        if (client.world == null) {
             return;
         }
 
-        if (entity.squaredDistanceTo(client.gameRenderer.getCamera().getPos()) > MAX_RENDER_DISTANCE_SQ) {
+        PlayerEntity player = client.world.getPlayers().stream()
+                .filter(p -> p.getId() == state.id)
+                .findFirst()
+                .orElse(null);
+
+        if (player == null) {
+            return;
+        }
+
+        AccessoriesCapability cap = AccessoriesCapability.get(player);
+        if (cap == null || !cap.isEquipped(stack -> stack.getItem() instanceof BackpackItem)) {
+            return;
+        }
+
+        if (player == client.player && client.options.getPerspective().isFirstPerson()) {
+            return;
+        }
+
+        double distanceSq = player.squaredDistanceTo(client.gameRenderer.getCamera().getPos());
+        if (distanceSq > MAX_RENDER_DISTANCE_SQ) {
             return;
         }
 
         matrices.push();
 
         try {
-            PlayerEntityModel<PlayerEntity> playerModel = this.getContextModel();
-            playerModel.body.rotate(matrices);
+            PlayerEntityModel model = this.getContextModel();
+
+            model.body.rotate(matrices);
 
             matrices.translate(0.0, -0.45, 0.125);
+
+            if (state.pose == EntityPose.SWIMMING) {
+                matrices.translate(0.0, 0.0, 0.08);
+            }
+
             matrices.scale(0.8F, 0.8F, 0.8F);
 
-            if (playerModel.child) {
+            if (state.baby) {
                 matrices.scale(0.625F, 0.625F, 0.625F);
                 matrices.translate(0.0, 1.2, 0.0);
             }
 
-            playerModel.copyStateTo(this.backpackModel);
-            this.backpackModel.setAngles(entity, limbAngle, limbDistance,
-                    animationProgress, headYaw, headPitch);
+            this.backpackModel.setAngles(state);
 
             var vertexConsumer = vertexConsumers.getBuffer(
                     RenderLayer.getEntityCutoutNoCull(TEXTURE)
             );
 
-            this.backpackModel.render(matrices, vertexConsumer, light, OverlayTexture.DEFAULT_UV, 0xFFFFFFFF);
+            this.backpackModel.render(
+                    matrices,
+                    vertexConsumer,
+                    light,
+                    OverlayTexture.DEFAULT_UV,
+                    0xFFFFFFFF
+            );
 
         } finally {
             matrices.pop();

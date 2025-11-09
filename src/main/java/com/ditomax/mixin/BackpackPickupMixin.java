@@ -1,7 +1,7 @@
 package com.ditomax.mixin;
 
 import com.ditomax.item.BackpackItem;
-import dev.emi.trinkets.api.TrinketsApi;
+import io.wispforest.accessories.api.AccessoriesCapability;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -78,13 +78,20 @@ public abstract class BackpackPickupMixin {
         }
     }
 
-    @Unique
-    private boolean hasBackpack(PlayerEntity player) {
-        boolean hasBackpack = TrinketsApi.getTrinketComponent(player)
-                .map(comp -> comp.isEquipped(stack -> stack.getItem() instanceof BackpackItem))
-                .orElse(false);
 
-        if (hasBackpack) return true;
+    // Hilfsmethode: Prüft ob Spieler ein Backpack in Accessory-Slots trägt
+    private boolean hasBackpack(PlayerEntity player) {
+        var capability = AccessoriesCapability.get(player);
+        if (capability == null) return false;
+
+        for (var container : capability.getContainers().values()) {
+            for (int i = 0; i < container.getSize(); i++) {
+                ItemStack stack = container.getAccessories().getStack(i);
+                if (stack.getItem() instanceof BackpackItem) {
+                    return true;
+                }
+            }
+        }
 
         return getBackpackCount(player) > 0;
     }

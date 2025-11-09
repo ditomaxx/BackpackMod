@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "order": 110,
+  "slots": [
+    "back"
+  ],
+  "icon": "minecraft:item/leather_chestplate"
+}
