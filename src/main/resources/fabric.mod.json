@@ -3,7 +3,7 @@
   "id": "backpackmod",
   "version": "${version}",
   "name": "Backpackmod",
-  "description": "This Mod adds a fully functional Backpack using the Trinkets API",
+  "description": "This Mod adds a fully functional Backpack using the Accessories API",
   "authors": [
     "Ditomax"
   ],
