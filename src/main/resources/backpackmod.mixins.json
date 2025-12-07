@@ -5,7 +5,8 @@
   "mixins": [
     "BackpackInventoryMixin",
     "BackpackPickupMixin",
-    "BlockHopperExtractionMixin"
+    "BlockHopperExtractionMixin",
+    "BundelsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

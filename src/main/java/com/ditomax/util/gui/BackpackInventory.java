@@ -14,7 +14,7 @@ public class BackpackInventory implements Inventory {
     private final ItemStack backpackStack;
     private final DefaultedList<ItemStack> items;
 
-    //Constructor für Server
+    // Constructor für Server
     public BackpackInventory(ItemStack backpackStack) {
         this.backpackStack = backpackStack;
         this.items = DefaultedList.ofSize(27, ItemStack.EMPTY);
@@ -30,9 +30,9 @@ public class BackpackInventory implements Inventory {
         }
     }
 
-    // Constructor für Client
+    // ✅ Constructor für Client - backpackStack ist null!
     public BackpackInventory() {
-        this.backpackStack = ItemStack.EMPTY;
+        this.backpackStack = null;
         this.items = DefaultedList.ofSize(27, ItemStack.EMPTY);
     }
 
@@ -80,7 +80,8 @@ public class BackpackInventory implements Inventory {
 
     @Override
     public void markDirty() {
-        if (!backpackStack.isEmpty()) {
+        // ✅ Nur auf Server speichern (backpackStack ist auf Client null)
+        if (backpackStack != null && !backpackStack.isEmpty()) {
             backpackStack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(items));
         }
     }

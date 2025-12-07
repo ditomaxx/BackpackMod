@@ -38,9 +38,10 @@ public class BackpackScreen extends HandledScreen<BackpackScreenHandler> {
 
     @Override
     protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        RenderSystem.setShaderTexture(0, TEXTURE);
-
-        context.drawTexture(RenderLayer::getGuiTextured,TEXTURE, this.x, this.y, 0, 0, this.backgroundWidth, 71, 256, 256);
-        context.drawTexture(RenderLayer::getGuiTextured, TEXTURE, this.x, this.y + 71, 0, 125, this.backgroundWidth, 96, 256, 256);
+        // ✅ Kein RenderSystem.setShaderTexture mehr nötig in 1.21.4!
+        context.drawTexture(RenderLayer::getGuiTextured, TEXTURE,
+                this.x, this.y, 0, 0, this.backgroundWidth, 71, 256, 256);
+        context.drawTexture(RenderLayer::getGuiTextured, TEXTURE,
+                this.x, this.y + 71, 0, 125, this.backgroundWidth, 96, 256, 256);
     }
 }

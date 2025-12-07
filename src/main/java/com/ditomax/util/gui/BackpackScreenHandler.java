@@ -25,36 +25,22 @@ public class BackpackScreenHandler extends ScreenHandler {
         this.backpackOwnerUUID = backpackOwner.getUuid();
 
         checkSize(backpackInventory, 27);
-
-        // BACKPACK-SLOTS
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                this.addSlot(new Slot(backpackInventory, row * 9 + col, 8 + col * 18, 18 + row * 18));
-            }
-        }
-
-        // INVENTAR-SLOTS
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                this.addSlot(new Slot(playerInventory, 9 + row * 9 + col, 8 + col * 18, 86 + row * 18));
-            }
-        }
-
-        // HOTBAR
-        for (int i = 0; i < 9; i++) {
-            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 144));
-        }
+        this.addSlots(playerInventory);
     }
 
-    // Client constructor
-    public BackpackScreenHandler(int syncId, PlayerInventory playerInventory) {
+    // ✅ Client constructor - bekommt jetzt die UUID über das Payload-Objekt!
+    public BackpackScreenHandler(int syncId, PlayerInventory playerInventory, UUID ownerUUID) {
         super(ModScreenHandlers.BACKPACK_SCREEN_HANDLER, syncId);
 
         this.backpackInventory = new BackpackInventory();
-        this.backpackOwnerUUID = playerInventory.player.getUuid();
+        this.backpackOwnerUUID = ownerUUID; // ✅ UUID wird korrekt übertragen
 
         checkSize(this.backpackInventory, 27);
+        this.addSlots(playerInventory);
+    }
 
+    // ✅ Slots in eigene Methode ausgelagert (weniger Code-Duplikation)
+    private void addSlots(PlayerInventory playerInventory) {
         // BACKPACK-SLOTS
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
@@ -115,13 +101,15 @@ public class BackpackScreenHandler extends ScreenHandler {
         if (owner == null) {
             return false;
         }
+
+        // ✅ Spieler kann sein eigenes Backpack immer öffnen
         if (player.getUuid().equals(backpackOwnerUUID) && hasBackpackInInventory(player)) {
             return true;
         }
 
+        // ✅ Andere Spieler können nur öffnen, wenn Owner Backpack equipped hat und nah genug ist
         boolean ownerHasBackpack = hasBackpackEquipped(owner);
-
-        return ownerHasBackpack && owner.squaredDistanceTo(player) <= 32.0 * 32.0;
+        return ownerHasBackpack && owner.squaredDistanceTo(player) <= 7.0 * 7.0;
     }
 
     private boolean hasBackpackEquipped(PlayerEntity player) {
@@ -139,7 +127,6 @@ public class BackpackScreenHandler extends ScreenHandler {
 
         return false;
     }
-
 
     private boolean hasBackpackInInventory(PlayerEntity player) {
         for (ItemStack stack : player.getInventory().main) {
@@ -169,6 +156,8 @@ public class BackpackScreenHandler extends ScreenHandler {
         if (!player.getWorld().isClient()) {
             this.backpackInventory.markDirty();
         }
-        BackpackManager.removeInventory(player.getUuid());
+        // ✅ WICHTIG: Verwende backpackOwnerUUID statt player.getUuid()!
+        // Wenn Spieler A das Backpack von Spieler B öffnet, muss B's UUID verwendet werden!
+        BackpackManager.removeInventory(this.backpackOwnerUUID);
     }
 }
